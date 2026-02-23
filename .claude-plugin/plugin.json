@@ -1,0 +1,12 @@
+{
+  "name": "toolkit",
+  "description": "valksor's personal toolkit: skills, scripts, and templates for multi-stack development",
+  "version": "0.1.0",
+  "author": {
+    "name": "valksor"
+  },
+  "homepage": "https://github.com/valksor/toolkit",
+  "repository": "https://github.com/valksor/toolkit",
+  "license": "MIT",
+  "keywords": ["skills", "toolkit", "scaffolding", "templates"]
+}

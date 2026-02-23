@@ -1,0 +1,12 @@
+{
+  "name": "@valksor/toolkit",
+  "version": "0.1.0",
+  "description": "valksor's personal toolkit: skills, scripts, and templates for multi-stack development",
+  "author": {
+    "name": "valksor"
+  },
+  "homepage": "https://github.com/valksor/toolkit",
+  "repository": "https://github.com/valksor/toolkit",
+  "license": "BSD-3-Clause",
+  "keywords": ["skills", "toolkit", "scaffolding", "templates", "claude-code"]
+}

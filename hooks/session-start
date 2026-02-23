@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# SessionStart hook for valksor/toolkit plugin
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+# Read using-toolkit skill content
+using_toolkit_content=$(cat "${PLUGIN_ROOT}/skills/using-toolkit/SKILL.md" 2>&1 || echo "Error reading using-toolkit skill")
+
+escape_for_json() {
+    local s="$1"
+    s="${s//\\/\\\\}"
+    s="${s//\"/\\\"}"
+    s="${s//$'\n'/\\n}"
+    s="${s//$'\r'/\\r}"
+    s="${s//$'\t'/\\t}"
+    printf '%s' "$s"
+}
+
+using_toolkit_escaped=$(escape_for_json "$using_toolkit_content")
+
+session_context="<toolkit-context>\n${using_toolkit_escaped}\n</toolkit-context>"
+
+cat <<EOF
+{
+  "additional_context": "${session_context}",
+  "hookSpecificOutput": {
+    "hookEventName": "SessionStart",
+    "additionalContext": "${session_context}"
+  }
+}
+EOF
+
+exit 0
