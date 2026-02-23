@@ -8,7 +8,7 @@
     {
       "name": "toolkit",
       "description": "valksor's personal toolkit: skills, scripts, and templates for multi-stack development",
-      "version": "0.1.0",
+      "version": "0.0.0",
       "source": "./",
       "author": {
         "name": "valksor"
