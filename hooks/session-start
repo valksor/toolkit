@@ -21,7 +21,10 @@ escape_for_json() {
 
 using_toolkit_escaped=$(escape_for_json "$using_toolkit_content")
 
-session_context="<toolkit-context>\n${using_toolkit_escaped}\n</toolkit-context>"
+commit_guideline="Before ANY git commit, run git log --oneline -10 and match the existing commit style exactly."
+commit_guideline_escaped=$(escape_for_json "$commit_guideline")
+
+session_context="<toolkit-context>\n${using_toolkit_escaped}\n</toolkit-context>\n<commit-guideline>${commit_guideline_escaped}</commit-guideline>"
 
 cat <<EOF
 {
