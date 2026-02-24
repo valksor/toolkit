@@ -6,34 +6,20 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-# Read using-toolkit skill content
-using_toolkit_content=$(cat "${PLUGIN_ROOT}/skills/using-toolkit/SKILL.md" 2>&1 || echo "Error reading using-toolkit skill")
+python3 - "$PLUGIN_ROOT" <<'PYTHON'
+import json, sys, os
 
-escape_for_json() {
-    local s="$1"
-    s="${s//\\/\\\\}"
-    s="${s//\"/\\\"}"
-    s="${s//$'\n'/\\n}"
-    s="${s//$'\r'/\\r}"
-    s="${s//$'\t'/\\t}"
-    printf '%s' "$s"
-}
+plugin_root = sys.argv[1]
+skill_path = os.path.join(plugin_root, 'skills', 'using-toolkit', 'SKILL.md')
 
-using_toolkit_escaped=$(escape_for_json "$using_toolkit_content")
+try:
+    with open(skill_path) as f:
+        content = f.read()
+except Exception as e:
+    content = f"Error reading using-toolkit skill: {e}"
 
-commit_guideline="Before ANY git commit, run git log --oneline -10 and match the existing commit style exactly."
-commit_guideline_escaped=$(escape_for_json "$commit_guideline")
+commit_guideline = "Before ANY git commit, run git log --oneline -10 and match the existing commit style exactly."
+session_context = f"<toolkit-context>\n{content}\n</toolkit-context>\n<commit-guideline>{commit_guideline}</commit-guideline>"
 
-session_context="<toolkit-context>\n${using_toolkit_escaped}\n</toolkit-context>\n<commit-guideline>${commit_guideline_escaped}</commit-guideline>"
-
-cat <<EOF
-{
-  "additional_context": "${session_context}",
-  "hookSpecificOutput": {
-    "hookEventName": "SessionStart",
-    "additionalContext": "${session_context}"
-  }
-}
-EOF
-
-exit 0
+print(json.dumps({"additional_context": session_context}))
+PYTHON

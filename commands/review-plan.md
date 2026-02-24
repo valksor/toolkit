@@ -19,7 +19,7 @@ Run a calibrated multi-perspective review of a plan document using three paralle
 If the user provided a file path argument, use that.
 
 Otherwise:
-1. Check for recent `.md` files in `docs/plans/`, the current directory, and `~/.plaude/plans/`
+1. Check for recent `.md` files in `docs/plans/`, the current directory, and `~/.claude/plans/`
 2. If multiple candidates, ask the user which file to review
 
 Read the full plan content.
