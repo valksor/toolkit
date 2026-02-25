@@ -19,7 +19,16 @@ except Exception as e:
     content = f"Error reading using-toolkit skill: {e}"
 
 commit_guideline = "Before ANY git commit, run git log --oneline -10 and match the existing commit style exactly."
-session_context = f"<toolkit-context>\n{content}\n</toolkit-context>\n<commit-guideline>{commit_guideline}</commit-guideline>"
+startup_rules = (
+    "1. There is no such thing as 'not yours' — if you find a bug in tests or quality checks, fix it; never ignore it.\n"
+    "2. If the project has a Makefile, strongly prefer running make commands over calling commands directly.\n"
+    "3. Skills must be re-invoked for every new user input that triggers them. Prior invocations this session provide no exemption — each new error, task, or situation is a fresh trigger."
+)
+session_context = (
+    f"<toolkit-context>\n{content}\n</toolkit-context>\n"
+    f"<commit-guideline>{commit_guideline}</commit-guideline>\n"
+    f"<startup-rules>\n{startup_rules}\n</startup-rules>"
+)
 
 print(json.dumps({"additional_context": session_context}))
 PYTHON

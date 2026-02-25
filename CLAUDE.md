@@ -2,7 +2,7 @@
 
 ## Syncing
 
-After making changes, sync to all active config directories:
+After making changes, sync to all active config directories (BOTH SCRIPTS MUST BE EXECUTED):
 
 ```bash
 ./scripts/sync.sh          # syncs to ~/.claude
