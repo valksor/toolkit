@@ -24,10 +24,129 @@ startup_rules = (
     "2. If the project has a Makefile, strongly prefer running make commands over calling commands directly.\n"
     "3. Skills must be re-invoked for every new user input that triggers them. Prior invocations this session provide no exemption — each new error, task, or situation is a fresh trigger."
 )
+
+# --- Stack Context Detection ---
+
+def detect_stacks():
+    """Detect tech stacks from marker files in the current working directory."""
+    stacks = []
+
+    if os.path.exists('go.mod'):
+        stacks.append('go')
+
+    if any(os.path.exists(f) for f in ('pyproject.toml', 'requirements.txt', 'setup.py', 'Pipfile')):
+        stacks.append('python')
+
+    # React: check package.json for react dependency
+    pkg_json = None
+    if os.path.exists('package.json'):
+        try:
+            with open('package.json') as f:
+                pkg_json = json.load(f)
+        except Exception:
+            pass
+
+    if pkg_json:
+        all_deps = {**pkg_json.get('dependencies', {}), **pkg_json.get('devDependencies', {})}
+        if 'react' in all_deps:
+            stacks.append('react')
+
+    if os.path.exists('tsconfig.json'):
+        stacks.append('typescript')
+
+    if os.path.exists('Makefile'):
+        stacks.append('makefile')
+
+    if any(os.path.exists(f) for f in ('Dockerfile', 'docker-compose.yml', 'docker-compose.yaml')):
+        stacks.append('docker')
+
+    return stacks, pkg_json
+
+def extract_guidance(skill_content, stacks):
+    """Extract guidance blocks matching detected stacks from the SKILL.md."""
+    blocks = []
+    for stack in stacks:
+        begin = f'<!-- begin:{stack} -->'
+        end = f'<!-- end:{stack} -->'
+        if begin in skill_content and end in skill_content:
+            block = skill_content.split(begin)[1].split(end)[0].strip()
+            if block:
+                blocks.append(block)
+    return blocks
+
+def detect_tooling_notes(stacks, pkg_json):
+    """Detect specific tooling and return additional notes."""
+    notes = []
+
+    if 'go' in stacks and os.path.exists('go.sum'):
+        try:
+            with open('go.sum') as f:
+                go_sum = f.read()
+            if 'github.com/stretchr/testify' in go_sum:
+                notes.append("This project uses testify — use `assert` and `require` packages for test assertions.")
+        except Exception:
+            pass
+
+    if 'python' in stacks:
+        for cfg_file in ('pyproject.toml', 'setup.cfg', 'pytest.ini'):
+            if os.path.exists(cfg_file):
+                try:
+                    with open(cfg_file) as f:
+                        if 'pytest' in f.read():
+                            notes.append("This project uses pytest — use fixtures, parametrize, and pytest idioms.")
+                            break
+                except Exception:
+                    pass
+
+    if pkg_json and 'react' in stacks:
+        all_deps = {**pkg_json.get('dependencies', {}), **pkg_json.get('devDependencies', {})}
+        if '@reduxjs/toolkit' in all_deps or 'redux' in all_deps:
+            notes.append("This project uses Redux — follow existing slice/action patterns.")
+        elif 'zustand' in all_deps:
+            notes.append("This project uses Zustand — follow existing store patterns.")
+
+        if 'vitest' in all_deps:
+            notes.append("Tests use Vitest — use `describe`/`it`/`expect` patterns.")
+        elif 'jest' in all_deps:
+            notes.append("Tests use Jest — use `describe`/`it`/`expect` patterns.")
+
+        if '@testing-library/react' in all_deps:
+            notes.append("Component tests use Testing Library — test user behavior, not implementation.")
+
+    return notes
+
+# Run stack detection
+stacks, pkg_json = detect_stacks()
+stack_context = ""
+
+if stacks:
+    # Read the stack-context SKILL.md for guidance blocks
+    stack_skill_path = os.path.join(plugin_root, 'skills', 'stack-context', 'SKILL.md')
+    try:
+        with open(stack_skill_path) as f:
+            stack_skill_content = f.read()
+        guidance = extract_guidance(stack_skill_content, stacks)
+        tooling_notes = detect_tooling_notes(stacks, pkg_json)
+
+        parts = []
+        if guidance:
+            parts.extend(guidance)
+        if tooling_notes:
+            parts.append("### Detected Tooling\n" + "\n".join(f"- {n}" for n in tooling_notes))
+
+        if parts:
+            detected = ",".join(stacks)
+            stack_context = f'\n<stack-context detected="{detected}">\n' + "\n\n".join(parts) + "\n</stack-context>"
+    except Exception:
+        pass  # Stack context is optional — don't fail the hook
+
+# --- Build session context ---
+
 session_context = (
     f"<toolkit-context>\n{content}\n</toolkit-context>\n"
     f"<commit-guideline>{commit_guideline}</commit-guideline>\n"
     f"<startup-rules>\n{startup_rules}\n</startup-rules>"
+    f"{stack_context}"
 )
 
 print(json.dumps({"additional_context": session_context}))
