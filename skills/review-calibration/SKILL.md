@@ -20,28 +20,26 @@ Every finding MUST be classified into exactly one level:
 - **Requires concrete justification:** WHAT breaks, WHO is affected, HOW LIKELY it occurs
 - If you cannot articulate a specific failure scenario with a victim, it is NOT a blocker
 - **Maximum 3 blockers per reviewer per pass.** If you have 4+ candidates, demote the least severe to Concern
+- Evaluated first and with highest priority, but still **validated against the actual codebase** before any fix is applied. Reviewers can misread code — the orchestrator must verify before acting
 
 ### Concern
 - Real issue that MUST be addressed or explicitly deferred before proceeding
 - Not immediately dangerous (otherwise it's a Blocker), but cannot be silently ignored
 - Include: what the risk is, under what conditions it manifests, suggested mitigation
-- **Maximum 5 concerns per reviewer.** If you have more, consolidate related items or demote the least important to Suggestions
-- Unlike Suggestions, concerns require an explicit response: fix, defer with justification, or accept risk
+- **Maximum 5 concerns per reviewer.** If you have more, consolidate related items or demote the least important to Advisories
+- Unlike Advisories, concerns require an explicit response: fix, defer with justification, or accept risk
 
-### Suggestion
-- Nice-to-have improvement: better naming, style preference, minor optimization, roughly-equivalent alternative approach
-- **Explicitly optional.** The implementer should feel zero pressure to address these
-- One sentence per suggestion is ideal
+### Advisory
+- A substantive finding that improves quality: better naming, structural improvement, minor optimization, alternative approach worth considering
+- **Not optional by default.** Each advisory must be evaluated on its merits and receive an explicit disposition (apply, defer, or decline with reason)
+- Lower priority than Blockers and Concerns, but a real finding — not noise
+- One sentence per advisory is ideal; include enough context for meaningful evaluation
 
 ## Re-Review Rules (Pass 2+)
 
 1. **Previously-addressed items are DONE.** Do not re-litigate. Do not say "this was improved but could be even better." It is done.
-2. **The bar for new blockers RISES with each pass:**
-   - Pass 1: Normal threshold
-   - Pass 2: New blockers only if they are worse than issues already approved in pass 1
-   - Pass 3+: New blockers only for genuine regressions introduced by the fixes themselves
-3. **Total findings must DECREASE on each pass**, not stay the same or increase
-4. If pass 1 had 0 blockers, pass 2 should almost certainly also have 0 blockers (unless a fix introduced a regression)
+2. **All findings are evaluated at normal threshold** regardless of pass number. Pre-existing vs regression is not a valid distinction — if a reviewer finds it in the reviewed files, it must be addressed.
+3. **Total findings must DECREASE on each pass**, not stay the same or increase. This is enforced by rule 1: addressed items drop off, and no new items should appear unless a fix introduced them.
 
 ## Concern Resolution Requirement
 
@@ -77,7 +75,7 @@ If a review is still not passing after 3 rounds, **stop running automated review
 **Is a Concern, NOT a blocker:**
 > "The function handles errors by returning nil, which could cause a nil pointer dereference if the caller does not check. Unlikely in current call sites but could be a problem if reused."
 
-**Is a Suggestion, NOT a blocker:**
+**Is an Advisory, NOT a blocker:**
 > "This function is 45 lines. Consider extracting the validation logic into a helper."
 
 ## Reviewer Output Format
@@ -91,8 +89,8 @@ If a review is still not passing after 3 rounds, **stop running automated review
 ### Concerns
 - [C1] [title]: [risk, conditions, mitigation]
 
-### Suggestions
-- [S1] [one-liner]
+### Advisories
+- [A1] [one-liner]
 
 ### Verdict: PASS / NEEDS WORK / APPROVED WITH NOTES
 [One sentence summary]

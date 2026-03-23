@@ -22,8 +22,8 @@ Superpowers provides core workflow skills (`brainstorming`, `writing-plans`, `sy
 | Command | Description |
 |---------|-------------|
 | `/commit` | Create proper git commits for all uncommitted changes |
-| `/review-impl` | Calibrated 3-perspective review of code changes |
-| `/review-plan` | Calibrated 3-perspective review of a plan document |
+| `/review-impl` | Calibrated 4-perspective review of code changes (Senior Dev, QA, End User, Security) |
+| `/review-plan` | Calibrated 4-perspective review of a plan document (Senior Dev, QA, End User, Security) |
 
 ## Available Agents
 
@@ -32,6 +32,7 @@ Superpowers provides core workflow skills (`brainstorming`, `writing-plans`, `sy
 | `toolkit:reviewer-senior-dev` | Calibrated senior developer review (architecture, quality, patterns) |
 | `toolkit:reviewer-senior-qa` | Calibrated senior QA review (testability, failure modes, coverage) |
 | `toolkit:reviewer-end-user` | Calibrated end-user review (UX, error messages, API clarity) |
+| `toolkit:reviewer-security` | Calibrated security review (injection, auth, secrets, stack-specific vulnerabilities) |
 | `toolkit:reviewer-user-perspective` | Lightweight verdict on whether a feature is expected from a given user role |
 
 ## Available Skills
@@ -40,6 +41,8 @@ Superpowers provides core workflow skills (`brainstorming`, `writing-plans`, `sy
 |-------|-------------|
 | `toolkit:using-toolkit` | This file — toolkit overview |
 | `toolkit:review-calibration` | Severity classification and anti-hate-loop rules for multi-pass reviews |
+| `toolkit:stack-context` | Auto-detects project tech stack and injects coding conventions |
+| `toolkit:guided-migration` | Migration-specific assessment, planning, and execution patterns for large refactors |
 
 ## Workflow Integration
 

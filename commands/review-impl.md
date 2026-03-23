@@ -1,6 +1,6 @@
 ---
 name: review-impl
-description: Calibrated 3-perspective review of code changes (Senior Dev, Senior QA, End User)
+description: Calibrated 4-perspective review of code changes (Senior Dev, Senior QA, End User, Security)
 argument-hint: "[all | plan:<path> | plan:auto | file-or-diff-scope]"
 allowed-tools:
   - Read
@@ -12,7 +12,7 @@ allowed-tools:
   - Write
 ---
 
-Run a calibrated multi-perspective review of implementation changes using three parallel reviewers: Senior Developer, Senior QA, and End User.
+Run a calibrated multi-perspective review of implementation changes using four parallel reviewers: Senior Developer, Senior QA, End User, and Security.
 
 ## Step 1: Gather the Changes
 
@@ -102,9 +102,9 @@ Any unresolved concern becomes a **Blocker** on this pass. Prefix it: `"ESCALATE
 
 **Pass 3+:** Tell the user this is unusual. Suggest manual pair-review. Only proceed if confirmed.
 
-## Step 3: Dispatch Three Parallel Reviews
+## Step 3: Dispatch Four Parallel Reviews
 
-Launch ALL THREE in a single message using the Task tool.
+Launch ALL FOUR in a single message using the Task tool.
 
 ### Subagent 1: Senior Developer
 
@@ -178,13 +178,37 @@ DESIGN PLAN:
 [plan content]
 ```
 
+### Subagent 4: Security
+
+```
+subagent_type: "toolkit:reviewer-security"
+
+PASS NUMBER: [N]
+[If pass 2+:]
+PREVIOUSLY ADDRESSED:
+- [summary of items fixed in previous passes]
+
+[If escalated:]
+ESCALATED FROM PASS [N-1]: [concern] — now a blocker.
+
+CHANGED FILES:
+[file list]
+
+DIFF:
+[diff content]
+
+[If plan found:]
+DESIGN PLAN:
+[plan content]
+```
+
 ## Step 4: Merge and Present Results
 
 **DO NOT** output individual reviewer responses. Process internally → single consolidated summary.
 
 ### 4.1 Parse
 
-Extract blockers, concerns, suggestions, and verdict from each agent.
+Extract blockers, concerns, advisories, and verdict from each agent.
 
 ### 4.2 Deduplicate
 
@@ -219,8 +243,8 @@ Two findings are duplicates if they reference the same file/function AND describ
 |---|---------|------------|-------|
 | 1 | [description] | [End User] | [conditions/mitigation] |
 
-### Suggestions ([Z] total)
-- [suggestion] ([source])
+### Advisories ([Z] total)
+- [advisory] ([source])
 
 ### Verdict Summary
 | Reviewer | Verdict |
@@ -228,43 +252,50 @@ Two findings are duplicates if they reference the same file/function AND describ
 | Senior Dev | [verdict] |
 | Senior QA | [verdict] |
 | End User | [verdict] |
+| Security | [verdict] |
 
 ```
 
 **After producing this summary, immediately proceed to Step 5 — do not wait for the user.**
 
-## Step 5: Address Findings
+## Step 5: Validate and Address Findings
 
-Work through all findings from the summary. Do not ask for permission — fix, evaluate, and act.
+Work through all findings from the summary. **Validate every finding against the actual codebase before acting.** AI reviewers can misread code, hallucinate issues, or misjudge severity — the orchestrator must verify before fixing.
 
-### 5.1 Fix All Blockers
+### 5.1 Validate and Fix Blockers
 
-Blockers are non-negotiable. For each one:
-1. Read the affected file(s) to understand context
-2. Implement the fix
-3. Note what was done in one line
+Blockers are highest priority but must be validated first. For each blocker:
+1. Read the affected file(s) and surrounding context to verify the finding is real
+2. Check whether the described failure scenario actually applies to this code
+3. If **CONFIRMED** → implement the fix, note what was done
+4. If **INVALID** (the reviewer misread the code, the issue does not actually exist, or the failure scenario is impossible given the actual implementation) → mark as "Invalid — [reason]" and do not fix
 
-For bug/crash blockers where the root cause is unclear, use `superpowers:systematic-debugging` before writing the fix.
+Invalid blockers do not count toward the NEEDS WORK verdict. If all blockers are invalidated, update the effective verdict accordingly.
 
-### 5.2 Evaluate and Address Concerns
+For confirmed bug/crash blockers where the root cause is unclear, use `superpowers:systematic-debugging` before writing the fix.
 
-For each concern, assess three things before acting:
-- **Technically valid?** Is this a real issue, not a false positive given the actual codebase?
-- **Viable now?** Can it be addressed within the current scope — no large unrelated refactors, no out-of-scope changes?
-- **Improves things?** Does addressing it clearly improve correctness, safety, or clarity without introducing new risk?
+### 5.2 Validate and Address Concerns
 
-If all three are yes → **fix it**, note what was done.
-If viable but borderline → **defer**: add a `// TODO:` comment with one line of justification.
-If not viable or out of scope → **skip with reason**.
+For each concern, validate before acting:
+- **Actually exists?** Read the relevant code — does this issue actually exist, or did the reviewer misread the implementation?
+- **Proportionate?** Given the actual code, is the severity appropriate, or is this a minor issue being overcategorized?
 
-### 5.3 Evaluate Suggestions
+If validated → **fix it**, note what was done. Pre-existing vs regression is not a valid distinction — all real findings must be addressed.
+If the fix requires changes to files *outside* the review scope → **defer**: add a `// TODO:` comment with one line of justification.
+If invalid (reviewer misread the code) → **decline** — "Invalid: [reason]."
 
-For each suggestion:
-- Is it clearly beneficial with low implementation risk?
-- Does it fit cleanly within the changed files?
+### 5.3 Evaluate Advisories
 
-If yes to both → **apply it**.
-Otherwise → **skip** — suggestions are optional by definition.
+For each advisory:
+1. Read the relevant code to verify the finding is accurate
+2. Assess: Is the improvement real and worthwhile?
+3. Assess: Can it be applied cleanly within the changed files with low risk?
+
+If the finding is valid and can be applied within the reviewed files → **apply it**, note what was done.
+If the finding is valid but requires changes to files *outside* the review scope → **defer** with a brief reason.
+If the finding is invalid (reviewer misread the code) → **decline** — "Invalid: [reason]."
+
+Every advisory gets an explicit disposition. No advisory is dismissed without a stated reason.
 
 ### 5.4 Report and Re-run
 
@@ -273,20 +304,25 @@ Output a brief action summary:
 ```
 ## Fixes Applied - Pass [N]
 
-### Blockers ([N] fixed)
-- [B1]: [what was done]
+### Blockers ([N] confirmed and fixed, [M] invalid)
+- [B1]: Fixed — [what was done]
+- [B2]: Invalid — [reviewer misread X; actual code does Y]
 
 ### Concerns
 - [C1]: Fixed — [what was done]
-- [C2]: Deferred — [TODO added, reason]
-- [C3]: Skipped — [out of scope / not valid]
+- [C2]: Deferred — [requires changes outside review scope; TODO added]
+- [C3]: Declined — [invalid: reason]
 
-### Suggestions
-- [S1]: Applied — [what was done]
-- [S2]: Skipped — [reason]
+### Advisories
+- [A1]: Applied — [what was done]
+- [A2]: Deferred — [requires changes outside review scope]
+- [A3]: Declined — [invalid: reason]
+
+### Post-Validation Verdict: [PASS / NEEDS WORK / APPROVED WITH NOTES]
+[Updated verdict after removing invalid findings]
 ```
 
-Then **automatically re-run from Step 1** as pass [N+1] to confirm the fixes hold.
+Then **automatically re-run from Step 1** as pass [N+1] to confirm the fixes hold. Include invalidated findings under "PREVIOUSLY ADDRESSED" as "Invalid — verified against codebase, not a real issue" so reviewers do not re-raise them.
 
 **Stopping condition:** If after re-running the verdict is PASS or APPROVED WITH NOTES, stop and tell the user. If still NEEDS WORK after one fix-and-re-review cycle, stop, report remaining issues, and ask the user how to proceed rather than looping.
 

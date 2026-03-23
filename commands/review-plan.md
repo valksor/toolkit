@@ -1,6 +1,6 @@
 ---
 name: review-plan
-description: Calibrated 3-perspective review of a plan document (Senior Dev, Senior QA, End User)
+description: Calibrated 4-perspective review of a plan document (Senior Dev, Senior QA, End User, Security)
 argument-hint: "<plan-file-path>"
 allowed-tools:
   - Read
@@ -12,7 +12,7 @@ allowed-tools:
   - Write
 ---
 
-Run a calibrated multi-perspective review of a plan document using three parallel reviewers: Senior Developer, Senior QA, and End User.
+Run a calibrated multi-perspective review of a plan document using four parallel reviewers: Senior Developer, Senior QA, End User, and Security.
 
 ## Step 1: Locate the Plan
 
@@ -40,9 +40,9 @@ Any unresolved concern becomes a **Blocker** on this pass. Prefix it: `"ESCALATE
 
 **Pass 3+:** Tell the user this is unusual. Suggest manual pair-review. Only proceed if confirmed.
 
-## Step 3: Dispatch Three Parallel Reviews
+## Step 3: Dispatch Four Parallel Reviews
 
-Launch ALL THREE in a single message using the Task tool.
+Launch ALL FOUR in a single message using the Task tool.
 
 ### Subagent 1: Senior Developer
 
@@ -95,13 +95,30 @@ PLAN TO REVIEW:
 [full plan content]
 ```
 
+### Subagent 4: Security
+
+```
+subagent_type: "toolkit:reviewer-security"
+
+PASS NUMBER: [N]
+[If pass 2+:]
+PREVIOUSLY ADDRESSED:
+- [summary of items fixed in previous passes]
+
+[If escalated:]
+ESCALATED FROM PASS [N-1]: [concern] — now a blocker.
+
+PLAN TO REVIEW:
+[full plan content]
+```
+
 ## Step 4: Merge and Present Results
 
 **DO NOT** output individual reviewer responses. Process internally → single consolidated summary.
 
 ### 4.1 Parse
 
-Extract blockers, concerns, suggestions, and verdict from each agent.
+Extract blockers, concerns, advisories, and verdict from each agent.
 
 ### 4.2 Deduplicate
 
@@ -132,8 +149,8 @@ Two findings are duplicates if they reference the same section/component AND des
 |---|---------|------------|-------|
 | 1 | [description] | [End User] | [conditions/mitigation] |
 
-### Suggestions ([Z] total)
-- [suggestion] ([source])
+### Advisories ([Z] total)
+- [advisory] ([source])
 
 ### Verdict Summary
 | Reviewer | Verdict |
@@ -141,41 +158,48 @@ Two findings are duplicates if they reference the same section/component AND des
 | Senior Dev | [verdict] |
 | Senior QA | [verdict] |
 | End User | [verdict] |
+| Security | [verdict] |
 
 ```
 
 **After producing this summary, immediately proceed to Step 5 — do not wait for the user.**
 
-## Step 5: Address Findings
+## Step 5: Validate and Address Findings
 
-Work through all findings by editing the plan file directly. Do not ask for permission.
+Work through all findings by editing the plan file directly. **Validate every finding against the actual plan content before acting.** AI reviewers can misread plans, hallucinate gaps, or misjudge severity — the orchestrator must verify before modifying.
 
-### 5.1 Fix All Blockers
+### 5.1 Validate and Fix Blockers
 
-Blockers are non-negotiable. For each one:
-1. Identify which section of the plan the blocker concerns
-2. Edit the plan file to resolve it — add missing steps, fix incorrect assumptions, clarify ambiguities
-3. Note what was changed in one line
+Blockers are highest priority but must be validated first. For each blocker:
+1. Re-read the relevant plan section to verify the finding is real
+2. Check whether the described gap or risk actually applies given the plan's context
+3. If **CONFIRMED** → edit the plan to resolve it (add missing steps, fix incorrect assumptions, clarify ambiguities), note what was changed
+4. If **INVALID** (the reviewer misread the plan, the gap doesn't exist, or the risk is already addressed elsewhere in the plan) → mark as "Invalid — [reason]" and do not modify
 
-### 5.2 Evaluate and Address Concerns
+Invalid blockers do not count toward the NEEDS WORK verdict. If all blockers are invalidated, update the effective verdict accordingly.
 
-For each concern, assess:
-- **Technically valid?** Is this a real gap or risk given the plan's actual scope?
-- **Viable to address in the plan?** Can it be resolved by clarifying or extending the plan — not by writing implementation code now?
-- **Improves the plan?** Does addressing it make the plan safer or clearer to execute?
+### 5.2 Validate and Address Concerns
 
-If all three are yes → **edit the plan to address it**, note what was changed.
-If it should be deferred to implementation → **add a note** in the relevant plan section: `> Note: [concern] — will be addressed during implementation.`
-If not valid or out of scope → **skip with reason**.
+For each concern, validate before acting:
+- **Actually exists?** Re-read the plan — does this gap or risk actually exist, or did the reviewer misread?
+- **Proportionate?** Given the actual plan, is the severity appropriate?
 
-### 5.3 Evaluate Suggestions
+If validated → **edit the plan to address it**, note what was changed. Pre-existing vs regression is not a valid distinction — all real findings must be addressed.
+If validated but can only be resolved during implementation (not in the plan itself) → **add a note** in the relevant plan section: `> Note: [concern] — will be addressed during implementation.`
+If invalid (reviewer misread the plan) → **decline** — "Invalid: [reason]."
 
-For each suggestion:
-- Does it meaningfully improve the plan's clarity or completeness?
-- Is it a small, safe addition?
+### 5.3 Evaluate Advisories
 
-If yes to both → **apply it** to the plan.
-Otherwise → **skip** — suggestions are optional.
+For each advisory:
+1. Re-read the relevant plan section to verify the finding is accurate
+2. Assess: Does it meaningfully improve the plan's clarity or completeness?
+3. Assess: Is it a small, safe addition?
+
+If the finding is valid → **apply it** to the plan, note what was changed.
+If the finding is valid but can only be resolved during implementation → **defer** with a brief reason.
+If the finding is invalid (reviewer misread the plan) → **decline** — "Invalid: [reason]."
+
+Every advisory gets an explicit disposition. No advisory is dismissed without a stated reason.
 
 ### 5.4 Report and Re-run
 
@@ -184,20 +208,25 @@ Output a brief action summary:
 ```
 ## Plan Revisions - Pass [N]
 
-### Blockers ([N] fixed)
-- [B1]: [what was updated in the plan]
+### Blockers ([N] confirmed and fixed, [M] invalid)
+- [B1]: Fixed — [what was updated in the plan]
+- [B2]: Invalid — [reviewer misread X; plan already addresses Y]
 
 ### Concerns
 - [C1]: Fixed — [what was updated]
 - [C2]: Noted for implementation — [section updated]
-- [C3]: Skipped — [not valid / out of scope]
+- [C3]: Declined — [invalid / out of scope / reason]
 
-### Suggestions
-- [S1]: Applied — [what was added]
-- [S2]: Skipped — [reason]
+### Advisories
+- [A1]: Applied — [what was added]
+- [A2]: Deferred — [reason]
+- [A3]: Declined — [reason]
+
+### Post-Validation Verdict: [PASS / NEEDS WORK / APPROVED WITH NOTES]
+[Updated verdict after removing invalid findings]
 ```
 
-Then **automatically re-run from Step 1** as pass [N+1] to confirm the revisions hold.
+Then **automatically re-run from Step 1** as pass [N+1] to confirm the revisions hold. Include invalidated findings under "PREVIOUSLY ADDRESSED" as "Invalid — verified against plan, not a real issue" so reviewers do not re-raise them.
 
 **Stopping condition:** If after re-running the verdict is PASS or APPROVED WITH NOTES, stop and tell the user the plan is ready — suggest proceeding with `superpowers:executing-plans` or `superpowers:subagent-driven-development`. If still NEEDS WORK after one fix-and-re-review cycle, stop, report remaining issues, and ask the user how to proceed.
 
