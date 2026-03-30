@@ -56,6 +56,7 @@ echo "Syncing $SOURCE_DIR → $TARGET_DIR..."
 
 sync_to "$TARGET_DIR/plugins/$PLUGIN_NAME"
 sync_to "$TARGET_DIR/plugins/cache/$MARKETPLACE/$PLUGIN_NAME/$VERSION"
+sync_to "$TARGET_DIR/plugins/marketplaces/$MARKETPLACE"
 update_installed_record "$TARGET_DIR"
 
 # Register source path so /update-toolkit can rsync without arguments
