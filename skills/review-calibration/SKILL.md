@@ -51,17 +51,17 @@ On pass 2+, the orchestrator checks whether concerns from previous passes were r
 
 **Unaddressed concerns escalate:** If a concern from pass N was not resolved by one of the above methods, it becomes a **Blocker** on pass N+1. This prevents concerns from being silently ignored.
 
-The escalation rule is the key enforcement mechanism. Without it, "APPROVED WITH NOTES" becomes "just ship it."
+The escalation rule is the key enforcement mechanism. Without it, "CONCERNS REMAIN" becomes "just ship it."
 
 ## Convergence Criteria
 
 | Verdict | Condition | Action |
 |---------|-----------|--------|
 | **PASS** | Zero blockers, zero concerns | Proceed |
-| **APPROVED WITH NOTES** | Zero blockers, concerns exist | Resolve each concern (address/defer/accept), then proceed |
+| **CONCERNS REMAIN** | Zero blockers, concerns exist | Resolve each concern (address/defer/accept), then proceed |
 | **NEEDS WORK** | Any reviewer has 1+ blockers | Address blockers, re-run review |
 
-**Important:** APPROVED WITH NOTES is NOT "proceed and maybe look at concerns later." Each concern must be explicitly resolved before proceeding. Unresolved concerns become blockers on the next pass.
+**Important:** CONCERNS REMAIN is NOT "proceed and maybe look at concerns later." Each concern must be explicitly resolved before proceeding. Unresolved concerns become blockers on the next pass.
 
 ## Pass 3+ Escape Valve
 
@@ -92,6 +92,6 @@ If a review is still not passing after 3 rounds, **stop running automated review
 ### Advisories
 - [A1] [one-liner]
 
-### Verdict: PASS / NEEDS WORK / APPROVED WITH NOTES
+### Verdict: PASS / NEEDS WORK / CONCERNS REMAIN
 [One sentence summary]
 ```

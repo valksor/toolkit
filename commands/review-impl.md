@@ -217,7 +217,7 @@ Two findings are duplicates if they reference the same file/function AND describ
 ### 4.3 Overall Verdict
 
 - Any blocker → **NEEDS WORK**
-- No blockers, concerns exist → **APPROVED WITH NOTES**
+- No blockers, concerns exist → **CONCERNS REMAIN**
 - No blockers, no concerns → **PASS**
 
 ### 4.4 Output
@@ -229,7 +229,7 @@ Two findings are duplicates if they reference the same file/function AND describ
 **Scope:** Plan-scoped — `[plan-filename]`
 - Reviewing: [Z] files | Excluded: [W] files
 
-### Overall Verdict: [PASS / NEEDS WORK / APPROVED WITH NOTES]
+### Overall Verdict: [PASS / NEEDS WORK / CONCERNS REMAIN]
 
 ### Blockers ([X] unique)
 | # | Finding | Flagged By | File(s) | Impact |
@@ -318,13 +318,13 @@ Output a brief action summary:
 - [A2]: Deferred — [requires changes outside review scope]
 - [A3]: Declined — [invalid: reason]
 
-### Post-Validation Verdict: [PASS / NEEDS WORK / APPROVED WITH NOTES]
+### Post-Validation Verdict: [PASS / NEEDS WORK / CONCERNS REMAIN]
 [Updated verdict after removing invalid findings]
 ```
 
 Then **automatically re-run from Step 1** as pass [N+1] to confirm the fixes hold. Include invalidated findings under "PREVIOUSLY ADDRESSED" as "Invalid — verified against codebase, not a real issue" so reviewers do not re-raise them.
 
-**Stopping condition:** If after re-running the verdict is PASS or APPROVED WITH NOTES, stop and tell the user. If still NEEDS WORK after one fix-and-re-review cycle, stop, report remaining issues, and ask the user how to proceed rather than looping.
+**Stopping condition:** If after re-running the verdict is PASS or CONCERNS REMAIN, stop and tell the user. If still NEEDS WORK after one fix-and-re-review cycle, stop, report remaining issues, and ask the user how to proceed rather than looping.
 
 ## Restrictions
 

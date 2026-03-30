@@ -127,7 +127,7 @@ Two findings are duplicates if they reference the same section/component AND des
 ### 4.3 Overall Verdict
 
 - Any blocker → **NEEDS WORK**
-- No blockers, concerns exist → **APPROVED WITH NOTES**
+- No blockers, concerns exist → **CONCERNS REMAIN**
 - No blockers, no concerns → **PASS**
 
 ### 4.4 Output
@@ -135,7 +135,7 @@ Two findings are duplicates if they reference the same section/component AND des
 ```
 ## Plan Review Summary - Pass [N]
 
-### Overall Verdict: [PASS / NEEDS WORK / APPROVED WITH NOTES]
+### Overall Verdict: [PASS / NEEDS WORK / CONCERNS REMAIN]
 
 ### Blockers ([X] unique)
 | # | Finding | Flagged By | Impact |
@@ -222,13 +222,13 @@ Output a brief action summary:
 - [A2]: Deferred — [reason]
 - [A3]: Declined — [reason]
 
-### Post-Validation Verdict: [PASS / NEEDS WORK / APPROVED WITH NOTES]
+### Post-Validation Verdict: [PASS / NEEDS WORK / CONCERNS REMAIN]
 [Updated verdict after removing invalid findings]
 ```
 
 Then **automatically re-run from Step 1** as pass [N+1] to confirm the revisions hold. Include invalidated findings under "PREVIOUSLY ADDRESSED" as "Invalid — verified against plan, not a real issue" so reviewers do not re-raise them.
 
-**Stopping condition:** If after re-running the verdict is PASS or APPROVED WITH NOTES, stop and tell the user the plan is ready — suggest proceeding with `superpowers:executing-plans` or `superpowers:subagent-driven-development`. If still NEEDS WORK after one fix-and-re-review cycle, stop, report remaining issues, and ask the user how to proceed.
+**Stopping condition:** If after re-running the verdict is PASS or CONCERNS REMAIN, stop and tell the user the plan is ready — suggest proceeding with `superpowers:executing-plans` or `superpowers:subagent-driven-development`. If still NEEDS WORK after one fix-and-re-review cycle, stop, report remaining issues, and ask the user how to proceed.
 
 ## Restrictions
 

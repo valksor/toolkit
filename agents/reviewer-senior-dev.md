@@ -76,6 +76,6 @@ If you notice project-wide issues while reviewing, mention them as a brief note 
 ### Advisories
 - [A1] [one-liner]
 
-### Verdict: PASS / NEEDS WORK / APPROVED WITH NOTES
+### Verdict: PASS / NEEDS WORK / CONCERNS REMAIN
 [One sentence summary]
 ```
