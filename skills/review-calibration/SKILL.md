@@ -57,11 +57,11 @@ The escalation rule is the key enforcement mechanism. Without it, "CONCERNS REMA
 
 | Verdict | Condition | Action |
 |---------|-----------|--------|
-| **PASS** | Zero blockers, zero concerns | Proceed |
-| **CONCERNS REMAIN** | Zero blockers, concerns exist | Resolve each concern (address/defer/accept), then proceed |
-| **NEEDS WORK** | Any reviewer has 1+ blockers | Address blockers, re-run review |
+| **PASS** | All findings resolved (fixed, deferred, or declined as invalid), or none found | Proceed |
+| **CONCERNS REMAIN** | Concerns exist that have not yet been dispositioned | Continue resolving — fix, defer, or decline each one |
+| **NEEDS WORK** | Any reviewer has 1+ confirmed blockers | Fix blockers, re-run review |
 
-**Important:** CONCERNS REMAIN is NOT "proceed and maybe look at concerns later." Each concern must be explicitly resolved before proceeding. Unresolved concerns become blockers on the next pass.
+**Important:** CONCERNS REMAIN is a mid-review state, not a terminal verdict. The orchestrator must disposition every concern (fix, defer with justification, or decline as invalid). Once all concerns have an explicit disposition, the effective verdict becomes **PASS**. Only unresolved concerns on pass N escalate to blockers on pass N+1.
 
 ## Pass 3+ Escape Valve
 

@@ -222,13 +222,19 @@ Output a brief action summary:
 - [A2]: Deferred — [reason]
 - [A3]: Declined — [reason]
 
-### Post-Validation Verdict: [PASS / NEEDS WORK / CONCERNS REMAIN]
-[Updated verdict after removing invalid findings]
+### Post-Validation Verdict: [PASS / NEEDS WORK]
+[Recalculated verdict: if all blockers are fixed/invalidated AND all concerns are fixed/deferred/declined → PASS. Only NEEDS WORK if confirmed blockers remain unfixed.]
 ```
+
+**Post-validation verdict rules:** After Steps 5.1-5.3, every finding has an explicit disposition. Recalculate the verdict based on what remains *unresolved*:
+- All blockers fixed or invalidated, all concerns fixed/deferred/declined → **PASS**
+- Confirmed blockers remain unfixed → **NEEDS WORK**
+
+CONCERNS REMAIN should not appear as a post-validation verdict because Step 5 requires dispositioning every concern. If a concern was deferred (with justification) or declined (as invalid), it is resolved — not open.
 
 Then **automatically re-run from Step 1** as pass [N+1] to confirm the revisions hold. Include invalidated findings under "PREVIOUSLY ADDRESSED" as "Invalid — verified against plan, not a real issue" so reviewers do not re-raise them.
 
-**Stopping condition:** If after re-running the verdict is PASS or CONCERNS REMAIN, stop and tell the user the plan is ready — suggest proceeding with `superpowers:executing-plans` or `superpowers:subagent-driven-development`. If still NEEDS WORK after one fix-and-re-review cycle, stop, report remaining issues, and ask the user how to proceed.
+**Stopping condition:** If after re-running the verdict is **PASS**, stop and tell the user the plan is ready — suggest proceeding with `superpowers:executing-plans` or `superpowers:subagent-driven-development`. If still NEEDS WORK after one fix-and-re-review cycle, stop, report remaining issues, and ask the user how to proceed.
 
 ## Restrictions
 
