@@ -19,14 +19,14 @@ Every finding MUST be classified into exactly one level:
 - Genuinely broken: will cause real failures, data loss, security vulnerabilities, or makes the feature unusable
 - **Requires concrete justification:** WHAT breaks, WHO is affected, HOW LIKELY it occurs
 - If you cannot articulate a specific failure scenario with a victim, it is NOT a blocker
-- **Maximum 3 blockers per reviewer per pass.** If you have 4+ candidates, demote the least severe to Concern
+- Report all blockers found. Do not cap, demote, or suppress findings — the orchestrator validates and dispositions every finding
 - Evaluated first and with highest priority, but still **validated against the actual codebase** before any fix is applied. Reviewers can misread code — the orchestrator must verify before acting
 
 ### Concern
 - Real issue that MUST be addressed or explicitly deferred before proceeding
 - Not immediately dangerous (otherwise it's a Blocker), but cannot be silently ignored
 - Include: what the risk is, under what conditions it manifests, suggested mitigation
-- **Maximum 5 concerns per reviewer.** If you have more, consolidate related items or demote the least important to Advisories
+- Report all concerns found. Do not consolidate to meet a quota or demote concerns to advisories. Related but distinct issues should remain separate findings
 - Unlike Advisories, concerns require an explicit response: fix, defer with justification, or accept risk
 
 ### Advisory
@@ -83,7 +83,7 @@ If a review is still not passing after 3 rounds, **stop running automated review
 ```
 [ReviewerName] Review - Pass [N]
 
-### Blockers ([count]/3 max)
+### Blockers
 - [B1] [title]: [what breaks, who is affected]
 
 ### Concerns

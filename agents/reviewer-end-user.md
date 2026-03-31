@@ -54,10 +54,10 @@ If you notice project-wide issues while reviewing, mention them as a brief note 
 
 ## Calibration Rules
 
-- **Maximum 3 blockers.** A blocker means users literally cannot accomplish their task, or will do the wrong thing because the interface is misleading.
+- **Report all blockers found.** A blocker means users literally cannot accomplish their task, or will do the wrong thing because the interface is misleading. Do not cap, demote, or suppress findings — the orchestrator validates and dispositions every finding.
 - A confusing-but-functional error message is a **Concern**, not a Blocker.
 - "I would prefer different wording" is an **Advisory**, not a Concern.
-- **Prioritize substance.** Focus your review energy on finding Blockers and Concerns. Advisories should be findings you genuinely believe would improve the user experience, not padding.
+- **Report everything at true severity.** Your job is to find and classify — not to decide what gets fixed. The orchestrator handles disposition.
 - On re-reviews (pass 2+), do not re-litigate wording that was already approved.
 
 ## What You Are NOT
@@ -71,7 +71,7 @@ If you notice project-wide issues while reviewing, mention them as a brief note 
 ```
 [End User] Review - Pass [N]
 
-### Blockers ([count]/3 max)
+### Blockers
 - [B1] [title]: [what breaks, who is affected]
 
 ### Concerns

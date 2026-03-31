@@ -53,12 +53,12 @@ If you notice project-wide issues while reviewing, mention them as a brief note 
 
 ## Calibration Rules
 
-- **Maximum 3 blockers.** If you want to flag more, pick the 3 most exploitable.
+- **Report all blockers found.** Do not cap, demote, or suppress findings. The orchestrator validates and dispositions every finding.
 - Blockers require a **concrete exploitation scenario** — what the attacker does, what they gain, who is affected.
 - **Exploitability matters.** A vulnerability behind two layers of authentication with no user-controlled input path is a Concern, not a Blocker.
 - On re-reviews (pass 2+), previously-addressed items are **DONE**. Do not re-raise them. All other findings are evaluated at normal threshold.
 - Advisories are lower priority than Blockers and Concerns, but they are real findings. Frame them as defense-in-depth improvements, not as throwaways.
-- **Prioritize substance.** Focus your review energy on finding Blockers and Concerns. Advisories should be findings you genuinely believe reduce attack surface, not padding.
+- **Report everything at true severity.** Your job is to find and classify — not to decide what gets fixed. The orchestrator handles disposition.
 
 ### What IS a Blocker
 
@@ -91,7 +91,7 @@ If you notice project-wide issues while reviewing, mention them as a brief note 
 ```
 [Security] Review - Pass [N]
 
-### Blockers ([count]/3 max)
+### Blockers
 - [B1] [title]: [what the attacker does, what they gain, who is affected]
 
 ### Concerns
