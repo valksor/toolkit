@@ -140,6 +140,17 @@ if stacks:
     except Exception:
         pass  # Stack context is optional — don't fail the hook
 
+# --- Claudify auto-start detection ---
+import datetime
+
+claudify_nudge = ""
+daily_notes_dir = os.path.join(os.getcwd(), "Daily Notes")
+if os.path.isdir(daily_notes_dir):
+    today_tag = datetime.datetime.now().strftime("%m%d%y")
+    today_note = os.path.join(daily_notes_dir, f"{today_tag}.md")
+    if not os.path.exists(today_note):
+        claudify_nudge = "\n<claudify-autostart>This project uses Claudify and no daily note exists for today. Run /start to initialize the session.</claudify-autostart>"
+
 # --- Build session context ---
 
 session_context = (
@@ -147,6 +158,7 @@ session_context = (
     f"<commit-guideline>{commit_guideline}</commit-guideline>\n"
     f"<startup-rules>\n{startup_rules}\n</startup-rules>"
     f"{stack_context}"
+    f"{claudify_nudge}"
 )
 
 print(json.dumps({"additional_context": session_context}))
