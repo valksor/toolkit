@@ -14,6 +14,20 @@ allowed-tools:
 
 Run a calibrated multi-perspective review of a plan document using four parallel reviewers: Senior Developer, Senior QA, End User, and Security.
 
+## Mode Detection (Do This First)
+
+**Before any other action**, check for plan mode:
+- System instructions include "Plan mode is active"
+- An active plan file path exists (e.g., `~/.claude/plans/<name>.md`)
+
+If plan mode IS active:
+- Steps 1-4 proceed normally (all read-only operations)
+- Step 5 changes behavior: validate findings read-only but **do NOT edit the plan being reviewed** — see Step 5 for details
+- After validation, append findings to the **active plan file** (which may differ from the plan being reviewed) instead of re-running
+
+If plan mode is NOT active:
+- All steps proceed as written, including plan revisions in Step 5
+
 ## Step 1: Locate the Plan
 
 If the user provided a file path argument, use that.
@@ -166,6 +180,8 @@ Two findings are duplicates if they reference the same section/component AND des
 
 ## Step 5: Validate and Address Findings
 
+> **Plan mode:** If plan mode is active, perform all validation steps below (5.1-5.3) as READ-ONLY analysis. Determine each finding's disposition (confirmed/invalid) but do NOT edit the plan being reviewed, apply revisions, or add notes. Then skip to Step 5.4 (Plan Mode) below.
+
 Work through all findings by editing the plan file directly. **Validate every finding against the actual plan content before acting.** AI reviewers can misread plans, hallucinate gaps, or misjudge severity — the orchestrator must verify before modifying.
 
 ### 5.1 Validate and Fix Blockers
@@ -236,6 +252,46 @@ Then **automatically re-run from Step 1** as pass [N+1] to confirm the revisions
 
 **Stopping condition:** If after re-running the verdict is **PASS**, stop and tell the user the plan is ready — suggest proceeding with `superpowers:executing-plans` or `superpowers:subagent-driven-development`. If still NEEDS WORK after one fix-and-re-review cycle, stop, report remaining issues, and ask the user how to proceed.
 
+### 5.4 (Plan Mode): Append Findings to Active Plan File
+
+If plan mode is active, output the validation summary to the conversation (same format as 5.4 above, but with "Proposed revision" instead of "Fixed" for confirmed items), then **append** a review findings section to the **active plan file** (not the plan being reviewed — these may be different files):
+
+```
+## Plan Review Findings - Pass [N]
+
+### Plan Reviewed: [path to plan being reviewed]
+### Verdict: [PASS / NEEDS WORK / CONCERNS REMAIN]
+
+### Action Required
+[For each confirmed blocker:]
+- **BLOCKER** [plan section]: [description] — Proposed revision: [what should be changed]
+
+[For each confirmed concern:]
+- **CONCERN** [plan section]: [description] — Proposed revision: [what should be changed]
+
+[For each valid advisory:]
+- **ADVISORY** [plan section]: [description] — Proposed revision: [what should be changed]
+
+### Invalidated (No Action)
+- [finding]: Invalid — [reason]
+
+### Next Steps
+After exiting plan mode, run `/review-plan` again to apply revisions automatically.
+```
+
+Then inform the user:
+
+```
+Review complete — findings appended to plan file.
+
+Confirmed findings: N (X blockers, Y concerns, Z advisories)
+Invalidated: M
+
+Review the plan. After exiting plan mode, run /review-plan again to apply revisions.
+```
+
+Do NOT automatically re-run from Step 1. The revision-and-verify loop requires edit capabilities.
+
 ## Restrictions
 
 - NEVER skip calibration rules (see `toolkit:review-calibration`)
@@ -243,3 +299,4 @@ Then **automatically re-run from Step 1** as pass [N+1] to confirm the revisions
 - NEVER re-litigate addressed findings on pass 2+
 - NEVER wait for user input between Step 4 and Step 5 — address findings automatically
 - Pass 3+ with remaining blockers → suggest manual pair-review instead of another automated pass
+- **Plan mode takes precedence**: When plan mode is active, validation is still automatic, but NO edits are made to the plan being reviewed — findings are appended to the active plan file instead

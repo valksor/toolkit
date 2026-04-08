@@ -14,6 +14,20 @@ allowed-tools:
 
 Run a calibrated multi-perspective code review using four parallel reviewers: Senior Developer, Senior QA, End User, and Security.
 
+## Mode Detection (Do This First)
+
+**Before any other action**, check for plan mode:
+- System instructions include "Plan mode is active"
+- An active plan file path exists (e.g., `~/.claude/plans/<name>.md`)
+
+If plan mode IS active:
+- Steps 1-4 proceed normally (all read-only operations)
+- Step 5 changes behavior: validate findings read-only but **do NOT apply fixes** — see Step 5 for details
+- After validation, append findings to the active plan file instead of re-running
+
+If plan mode is NOT active:
+- All steps proceed as written, including fix application in Step 5
+
 ## Step 1: Gather the Changes
 
 Collect the code to review. The scope depends on the argument:
@@ -203,6 +217,8 @@ Two findings are duplicates if they reference the same file/function AND describ
 
 ## Step 5: Validate and Address Findings
 
+> **Plan mode:** If plan mode is active, perform all validation steps below (5.1-5.3) as READ-ONLY analysis. Determine each finding's disposition (confirmed/invalid) but do NOT implement fixes, apply edits, or add TODO comments. Then skip to Step 5.4 (Plan Mode) below.
+
 Work through all findings from the summary. **Validate every finding against the actual codebase before acting.** AI reviewers can misread code, hallucinate issues, or misjudge severity — the orchestrator must verify before fixing.
 
 ### 5.1 Validate and Fix Blockers
@@ -275,6 +291,45 @@ Then **automatically re-run from Step 1** as pass [N+1] to confirm the fixes hol
 
 **Stopping condition:** If after re-running the verdict is **PASS**, stop and tell the user. If still NEEDS WORK after one fix-and-re-review cycle, stop, report remaining issues, and ask the user how to proceed rather than looping.
 
+### 5.4 (Plan Mode): Append Findings to Plan File
+
+If plan mode is active, output the validation summary to the conversation (same format as 5.4 above, but with "Proposed fix" instead of "Fixed" for confirmed items), then **append** a review findings section to the active plan file:
+
+```
+## Code Review Findings - Pass [N]
+
+### Verdict: [PASS / NEEDS WORK / CONCERNS REMAIN]
+
+### Action Required
+[For each confirmed blocker:]
+- **BLOCKER** [file:line]: [description] — Proposed fix: [what should be done]
+
+[For each confirmed concern:]
+- **CONCERN** [file:line]: [description] — Proposed fix: [what should be done]
+
+[For each valid advisory:]
+- **ADVISORY** [file:line]: [description] — Proposed fix: [what should be done]
+
+### Invalidated (No Action)
+- [finding]: Invalid — [reason]
+
+### Next Steps
+After exiting plan mode, run `/review-code` again to apply fixes automatically.
+```
+
+Then inform the user:
+
+```
+Review complete — findings appended to plan file.
+
+Confirmed findings: N (X blockers, Y concerns, Z advisories)
+Invalidated: M
+
+Review the plan. After exiting plan mode, run /review-code again to apply fixes.
+```
+
+Do NOT automatically re-run from Step 1. The fix-and-verify loop requires edit capabilities.
+
 ## Restrictions
 
 - NEVER skip calibration rules (see `toolkit:review-calibration`)
@@ -283,3 +338,4 @@ Then **automatically re-run from Step 1** as pass [N+1] to confirm the fixes hol
 - NEVER wait for user input between Step 4 and Step 5 — address findings automatically
 - Pass 3+ with remaining blockers → suggest manual pair-review instead of another automated pass
 - Large diffs (500+ lines) → instruct reviewers to focus on the most critical files
+- **Plan mode takes precedence**: When plan mode is active, validation is still automatic, but NO edits are made — findings are appended to the plan file instead
